@@ -560,10 +560,12 @@ class InsufficientSystemResources(Exception):
         """
 
         self.job_name : Optional[str] = None
-        if hasattr(requirer, 'jobName') and isinstance(getattr(requirer, 'jobName'), str):
-            # Keep the job name if any
-            self.job_name = cast(str, getattr(requirer, 'jobName'))
-
+        for attr_name in ['unitName', 'jobName']:
+            # Get the first of these attributes that exists
+            if hasattr(requirer, attr_name) and isinstance(getattr(requirer, attr_name), str):
+                self.job_name = cast(str, getattr(requirer, attr_name))
+                break
+            
         self.resource = resource
         self.requested = cast(ParsedRequirement, getattr(requirer, resource))
         self.available = available
