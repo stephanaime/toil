@@ -298,7 +298,7 @@ def unpack_toil_uri(toil_uri: str) -> Tuple[FileID, str]:
 class NonDownloadingSize(WDL.StdLib._Size):
     """
     WDL size() implementatiuon that avoids downloading files.
-    
+
     MiniWDL's default size() implementation downloads the whole file to get its
     size. We want to be able to get file sizes from code running on the leader,
     where there may not be space to download the whole file. So we override the
@@ -310,10 +310,10 @@ class NonDownloadingSize(WDL.StdLib._Size):
         """
         Replacement evaluation implementation that avoids downloads.
         """
-        
+
         # Get all the URIs of files that actually are set.
         file_uris: List[str] = [f.value for f in arguments[0].coerce(WDL.Type.Array(WDL.Type.File(optional=True))).value if not isinstance(f, WDL.Value.Null)]
-        
+
         total_size = 0.0
         for uri in file_uris:
             # Sum up the sizes of all the files, if any.
@@ -326,7 +326,7 @@ class NonDownloadingSize(WDL.StdLib._Size):
             else:
                 # We need to fetch it and get its size.
                 total_size += os.path.getsize(self.stdlib._devirtualize_filename(uri))
-        
+
         if len(arguments) > 1:
             # Need to convert units. See
             # <https://github.com/chanzuckerberg/miniwdl/blob/498dc98d08e3ea3055b34b5bec408ae51dae0f0f/WDL/StdLib.py#L735-L740>
@@ -335,7 +335,7 @@ class NonDownloadingSize(WDL.StdLib._Size):
                 raise WDL.Error.EvalError(expr, "size(): invalid unit " + unit_name)
             # Divide down to the right unit
             total_size /= float(byte_size_units[unit_name])
-        
+
         # Return the result as a WDL float value
         return WDL.Value.Float(total_size)
 
@@ -354,7 +354,7 @@ class ToilWDLStdLibBase(WDL.StdLib.Base):
         write_dir = file_store.getLocalTempDir()
         # Set up miniwdl's implementation (which may be WDL.StdLib.TaskOutputs)
         super().__init__(wdl_version, write_dir)
-        
+
         # Replace the MiniWDL size() implementation with one that doesn't need
         # to always download the file.
         self.size = NonDownloadingSize(self)
@@ -814,11 +814,11 @@ class WDLBaseJob(Job):
         in the constructor because it needs to happen in the leader and the
         worker before a job body containing MiniWDL structures can be saved.
         """
-        
+
         # Default everything to being a local job
         if 'local' not in kwargs:
             kwargs['local'] = True
-        
+
         super().__init__(**kwargs)
 
         # The jobs can't pickle under the default Python recursion limit of
@@ -853,7 +853,7 @@ class WDLTaskJob(WDLBaseJob):
         """
         Make a new job to run a task.
         """
-        
+
         # This job should not be local because it represents a real workflow task.
         # TODO: Instead of re-scheduling with more resources, add a local
         # "wrapper" job like CWL uses to determine the actual requirements.
@@ -1157,7 +1157,7 @@ class WDLTaskJob(WDLBaseJob):
             # become typed.
             host_stdout_txt: str = task_container.host_stdout_txt() #  type: ignore
             host_stderr_txt: str = task_container.host_stderr_txt() #  type: ignore
-            
+
             if isinstance(task_container, SingularityContainer):
                 # Before running the command, we need to make sure the container's
                 # image is already pulled, so MiniWDL doesn't try and pull it.
